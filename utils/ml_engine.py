@@ -2,6 +2,7 @@
 Machine Learning engine for model training and prediction
 """
 
+import os
 import pickle
 from pathlib import Path
 
@@ -9,14 +10,8 @@ import numpy as np
 from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import (
-    accuracy_score,
-    f1_score,
-    precision_score,
-    recall_score,
-    cross_val_score,
-)
-from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
+from sklearn.model_selection import cross_val_score, train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 
@@ -29,6 +24,9 @@ class MLEngine:
     """Machine Learning engine for training and prediction"""
 
     def __init__(self, model_path, vectorizer_path, scaler_path):
+        self.original_model_path = Path(model_path)
+        self.original_vectorizer_path = Path(vectorizer_path)
+        self.original_scaler_path = Path(scaler_path)
         self.model_path = Path(model_path)
         self.vectorizer_path = Path(vectorizer_path)
         self.scaler_path = Path(scaler_path)
@@ -37,6 +35,21 @@ class MLEngine:
         self.scaler = None
         self.best_model_name = None
         self.metrics = {}
+
+    def _resolve_writable_path(self, path: Path) -> Path:
+        try:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            test_path = path.parent / ".write_test"
+            with open(test_path, "w") as test_file:
+                test_file.write("ok")
+            test_path.unlink()
+            return path
+        except OSError:
+            fallback_root = Path(os.getenv("EMAIL_SCAM_TEMP_DIR", "/tmp")) / "email_scam"
+            fallback_path = fallback_root / path.name
+            fallback_path.parent.mkdir(parents=True, exist_ok=True)
+            logger.warning(f"Path {path} is not writable. Falling back to {fallback_path}")
+            return fallback_path
 
     def train(self, X, y, feature_params=None):
         """Train multiple models and select the best one"""
@@ -139,19 +152,23 @@ class MLEngine:
     def load_models(self):
         """Load saved models"""
         try:
-            if self.model_path.exists():
-                logger.info("Loading model...")
-                with open(self.model_path, "rb") as f:
+            model_path = self.model_path if self.model_path.exists() else self.original_model_path
+            vectorizer_path = self.vectorizer_path if self.vectorizer_path.exists() else self.original_vectorizer_path
+            scaler_path = self.scaler_path if self.scaler_path.exists() else self.original_scaler_path
+
+            if model_path.exists():
+                logger.info(f"Loading model from {model_path}...")
+                with open(model_path, "rb") as f:
                     self.model = pickle.load(f)
 
-            if self.vectorizer_path.exists():
-                logger.info("Loading vectorizer...")
-                with open(self.vectorizer_path, "rb") as f:
+            if vectorizer_path.exists():
+                logger.info(f"Loading vectorizer from {vectorizer_path}...")
+                with open(vectorizer_path, "rb") as f:
                     self.vectorizer = pickle.load(f)
 
-            if self.scaler_path.exists():
-                logger.info("Loading scaler...")
-                with open(self.scaler_path, "rb") as f:
+            if scaler_path.exists():
+                logger.info(f"Loading scaler from {scaler_path}...")
+                with open(scaler_path, "rb") as f:
                     self.scaler = pickle.load(f)
 
             if self.model and self.vectorizer:
@@ -166,7 +183,9 @@ class MLEngine:
     def _save_models(self):
         """Save models to disk"""
         try:
-            self.model_path.parent.mkdir(parents=True, exist_ok=True)
+            self.model_path = self._resolve_writable_path(self.model_path)
+            self.vectorizer_path = self._resolve_writable_path(self.vectorizer_path)
+            self.scaler_path = self._resolve_writable_path(self.scaler_path)
 
             if self.model:
                 logger.info("Saving model...")

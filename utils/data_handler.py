@@ -18,8 +18,25 @@ class DataHandler:
     """Handles data downloading, loading, and management"""
 
     def __init__(self, dataset_path, backup_urls=None):
-        self.dataset_path = Path(dataset_path)
+        self.dataset_path = self._resolve_writable_path(Path(dataset_path))
         self.backup_urls = backup_urls or []
+
+    def _resolve_writable_path(self, path: Path) -> Path:
+        try:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            test_path = path.parent / ".write_test"
+            with open(test_path, "w") as test_file:
+                test_file.write("ok")
+            test_path.unlink()
+            return path
+        except OSError:
+            fallback_root = Path(os.getenv("EMAIL_SCAM_TEMP_DIR", "/tmp")) / "email_scam"
+            fallback_path = fallback_root / path.name
+            fallback_path.parent.mkdir(parents=True, exist_ok=True)
+            logger.warning(
+                f"Path {path} is not writable. Falling back to {fallback_path}"
+            )
+            return fallback_path
 
     def download_dataset(self):
         """Download dataset from URL with fallback"""
@@ -111,7 +128,7 @@ class DataHandler:
     def save_history(self, history_path, predictions):
         """Save prediction history"""
         try:
-            history_path = Path(history_path)
+            history_path = self._resolve_writable_path(Path(history_path))
             history_path.parent.mkdir(parents=True, exist_ok=True)
 
             existing = []
@@ -139,7 +156,7 @@ class DataHandler:
     def load_history(self, history_path):
         """Load prediction history"""
         try:
-            history_path = Path(history_path)
+            history_path = self._resolve_writable_path(Path(history_path))
             if history_path.exists():
                 with open(history_path, "r") as f:
                     return json.load(f)

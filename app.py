@@ -422,15 +422,22 @@ def internal_error(error):
 # ============================================================================
 
 
+# Initialize components on import for serverless environments
+if not app_ready:
+    init_components()
+
 if __name__ == "__main__":
     try:
         logger.info("Starting Email Scam Detection Platform...")
 
-        # Initialize components
-        if init_components():
-            logger.info("✓ Application initialized successfully")
+        # Initialize components if not already initialized
+        if not app_ready:
+            if init_components():
+                logger.info("✓ Application initialized successfully")
+            else:
+                logger.warning("⚠ Application initialized with warnings")
         else:
-            logger.warning("⚠ Application initialized with warnings")
+            logger.info("✓ Application already initialized")
 
         # Start Flask server
         logger.info(f"Starting Flask server on {config.HOST}:{config.PORT}")
