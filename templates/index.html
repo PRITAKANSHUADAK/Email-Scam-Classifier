@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Scam & Phishing Detector</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="background-animation"></div>
+    
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo-section">
+                    <div class="logo">🛡️</div>
+                    <div>
+                        <h1>Email Threat Detector</h1>
+                        <p class="subtitle">Advanced AI-Powered Security Analysis</p>
+                    </div>
+                </div>
+                <div class="status-indicator" id="statusIndicator">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Initializing...</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Prediction Panel -->
+            <section class="section prediction-panel">
+                <div class="section-header">
+                    <h2>📧 Email Analysis</h2>
+                    <p>Enter an email to analyze its security risk</p>
+                </div>
+
+                <div class="input-group">
+                    <textarea 
+                        id="emailInput" 
+                        class="email-input" 
+                        placeholder="Paste your email content here..."
+                        rows="8"
+                    ></textarea>
+                    <div class="input-actions">
+                        <button id="analyzeBtn" class="btn btn-primary">
+                            <span class="btn-icon">⚡</span> Analyze Email
+                        </button>
+                        <button id="clearBtn" class="btn btn-secondary">
+                            <span class="btn-icon">🗑️</span> Clear
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Loading Indicator -->
+                <div id="loadingIndicator" class="loading-indicator" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Analyzing email...</p>
+                </div>
+
+                <!-- Result Display -->
+                <div id="resultContainer" class="result-container" style="display: none;">
+                    <div id="resultCard" class="result-card"></div>
+                </div>
+
+                <!-- Error Display -->
+                <div id="errorContainer" class="error-container" style="display: none;">
+                    <div class="error-message" id="errorMessage"></div>
+                </div>
+            </section>
+
+            <!-- Dashboard Panels -->
+            <div class="panels-grid">
+                <!-- Statistics Panel -->
+                <section class="section stats-panel">
+                    <div class="section-header">
+                        <h2>📊 Statistics</h2>
+                    </div>
+                    <div class="stats-content" id="statsContent">
+                        <div class="stat-item">
+                            <span class="stat-label">Total Analyzed</span>
+                            <span class="stat-value" id="totalStats">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Threats Detected</span>
+                            <span class="stat-value threat" id="scamStats">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Legitimate</span>
+                            <span class="stat-value safe" id="legitimateStats">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Avg. Confidence</span>
+                            <span class="stat-value" id="confidenceStats">0%</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Model Info Panel -->
+                <section class="section model-info-panel">
+                    <div class="section-header">
+                        <h2>🧠 Model Info</h2>
+                    </div>
+                    <div class="model-info" id="modelInfo">
+                        <p class="loading-text">Loading model information...</p>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Analytics Charts -->
+            <section class="section charts-section">
+                <div class="charts-grid">
+                    <!-- Risk Distribution Chart -->
+                    <div class="chart-container">
+                        <div class="section-header">
+                            <h3>⚠️ Risk Distribution</h3>
+                        </div>
+                        <canvas id="riskChart"></canvas>
+                    </div>
+
+                    <!-- Classification Chart -->
+                    <div class="chart-container">
+                        <div class="section-header">
+                            <h3>🎯 Classification Overview</h3>
+                        </div>
+                        <canvas id="classificationChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- History Panel -->
+            <section class="section history-panel">
+                <div class="section-header">
+                    <h2>⏱️ Recent Analysis History</h2>
+                </div>
+                <div class="history-list" id="historyList">
+                    <p class="empty-state">No analysis history yet</p>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>🔒 Email Scam & Phishing Detector | Advanced AI Security Analysis | v1.0</p>
+            <p class="footer-time" id="footerTime"></p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
